@@ -1,3 +1,4 @@
+<?php
 /**
  * arrCleaner:  recursively removes any item indicated in the filter of an array
  * 
@@ -55,4 +56,4 @@ function arrCleaner($array,array $filter,bool $typeFilter=null, callable $callba
 			}
 		}
 	}
-	};	
+	};
