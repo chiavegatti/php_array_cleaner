@@ -1,59 +1,107 @@
 <?php
+
 /**
- * arrCleaner:  recursively removes any item indicated in the filter of an array
+ * PHP Array Cleaner
  * 
- * @param  array    $array - to filter
- * @param  array    $filter - List of elements to remove from $array
- * @param  bool     $typeFilter - (true -> Filter removes $array itens from Keys) | (false= Filter remove $array itens from Values)
- * @param  callable $callback callback takes ($value, $key)
- * @return array
+ * Recursively removes items from an array based on keys or values.
+ * Works with nested/multidimensional arrays.
  * 
+ * @author chiavegatti
+ * @license GPL-3.0
+ * @version 2.0.0
  */
 
+/**
+ * Recursively removes items from an array based on keys or values
+ * 
+ * @param array $array Array to filter
+ * @param array $filter Elements to remove (keys or values depending on $filterByKeys)
+ * @param bool $filterByKeys true = filter by keys, false = filter by values (default: false)
+ * @return array Filtered array
+ * 
+ * @example
+ * // Remove by values
+ * $data = ['name' => 'John', 'status' => 'inactive', 'age' => 30];
+ * $result = arrCleaner($data, ['inactive'], false);
+ * // Result: ['name' => 'John', 'age' => 30]
+ * 
+ * @example
+ * // Remove by keys
+ * $data = ['name' => 'John', 'password' => '123', 'email' => 'john@example.com'];
+ * $result = arrCleaner($data, ['password'], true);
+ * // Result: ['name' => 'John', 'email' => 'john@example.com']
+ * 
+ * @example
+ * // Nested arrays
+ * $data = [
+ *     'user' => [
+ *         'name' => 'John',
+ *         'password' => '123',
+ *         'address' => ['city' => 'NY', 'password' => 'secret']
+ *     ]
+ * ];
+ * $result = arrCleaner($data, ['password'], true);
+ * // Result: ['user' => ['name' => 'John', 'address' => ['city' => 'NY'] }]
+ */
+function arrCleaner(array $array, array $filter, bool $filterByKeys = false): array 
+{
+    if (empty($array)) {
+        return $array;
+    }
 
-function arrCleaner($array,array $filter,bool $typeFilter=null, callable $callback ) {
-	
-		if(!is_array($array)){
-			return false;
-		}
+    foreach ($array as $key => $value) {
+        if (is_array($value)) {
+            // Recursive call for nested arrays
+            $array[$key] = arrCleaner($value, $filter, $filterByKeys);
+            
+            // Remove empty arrays after filtering (optional - keeps structure clean)
+            if (empty($array[$key])) {
+                unset($array[$key]);
+            }
+        } else {
+            // Check if should be removed
+            if ($filterByKeys) {
+                if (in_array($key, $filter, strict: true)) {
+                    unset($array[$key]);
+                }
+            } else {
+                if (in_array($value, $filter, strict: true)) {
+                    unset($array[$key]);
+                }
+            }
+        }
+    }
+    
+    return $array;
+}
 
-		if(!is_array($filter)){
-			return $array;
-		}
-
-		foreach ($array as $k => $v) {
-		   
-			if (is_array($v)) {
-				$array[$k] = arrCleaner($v,$filter,$typeFilter, $callback);
-			} else {
-				if ($callback($filter,$typeFilter,$v,$k)) {
-					unset($array[$k]);
-				}
-				
-			}
-		}
-		return $array;
-	}
-	
-	function arrCleanerCallback($filter,$typeFilter,$value,$key){
-		
-		if ($filter){
-		foreach($filter as $k1=>$v1){	
-			if($typeFilter){
-				if ($key == $v1){
-				//echo 'MATCH: '.$Key.'=>'.$v1."\n\r";
-				//die();
-				//$value == $v1 ? $ret = true: $ret = false;
-				return true;
-				}
-			}else{
-				if ($value == $v1){
-					//echo 'MATCH: '.$value.'=>'.$v1."\n\r";
-					//die();
-					//$value == $v1 ? $ret = true: $ret = false;
-					return true;
-				}
-			}
-		}
-	}
-	};
+/**
+ * Alternative: Filter with custom callback for advanced use cases
+ * 
+ * @param array $array Array to filter
+ * @param callable $callback Function that returns true to remove element
+ * @return array Filtered array
+ * 
+ * @example
+ * $result = arrCleanerAdvanced($data, function($value, $key) {
+ *     return str_starts_with($key, '_') || $value === null;
+ * });
+ */
+function arrCleanerAdvanced(array $array, callable $callback): array 
+{
+    foreach ($array as $key => $value) {
+        if (is_array($value)) {
+            $array[$key] = arrCleanerAdvanced($value, $callback);
+            
+            if (empty($array[$key])) {
+                unset($array[$key]);
+            }
+        } else {
+            if ($callback($value, $key)) {
+                unset($array[$key]);
+            }
+        }
+    }
+    
+    return $array;
+}
