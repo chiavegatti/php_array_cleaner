@@ -1,46 +1,60 @@
 <?php
+
 /**
- * PHP Array Cleaner - Examples
+ * PHP Array Cleaner - Usage Examples
  * 
- * Run this file to see all examples in action:
- * php examples.php
+ * Run this file to see practical examples of how to use arrCleaner()
+ * 
+ * @author chiavegatti
+ * @version 2.0.0
  */
 
 require_once 'arr_cleaner.php';
 
+echo "========================================\n";
 echo "PHP Array Cleaner - Examples\n";
-echo str_repeat("=", 50) . "\n\n";
+echo "========================================\n\n";
 
-// Example 1: Filter by Values
-echo "Example 1: Filter by Values\n";
-echo str_repeat("-", 50) . "\n";
-$data1 = [
+// Example 1: Filter by values (default)
+echo "Example 1: Filter by values\n";
+echo "----------------------------\n";
+$data = [
     'name' => 'John',
     'status' => 'inactive',
     'age' => 30,
     'role' => 'inactive'
 ];
-echo "Before: " . json_encode($data1) . "\n";
-$result1 = arrCleaner($data1, ['inactive']);
-echo "After:  " . json_encode($result1) . "\n\n";
 
-// Example 2: Filter by Keys
-echo "Example 2: Filter by Keys\n";
-echo str_repeat("-", 50) . "\n";
-$data2 = [
+echo "Original: ";
+print_r($data);
+
+$result = arrCleaner($data, ['inactive']);
+echo "After removing 'inactive': ";
+print_r($result);
+echo "\n";
+
+// Example 2: Filter by keys
+echo "Example 2: Filter by keys\n";
+echo "----------------------------\n";
+$data = [
     'name' => 'John',
     'password' => '12345',
     'email' => 'john@example.com',
     'secret_key' => 'xyz'
 ];
-echo "Before: " . json_encode($data2) . "\n";
-$result2 = arrCleaner($data2, ['password', 'secret_key'], filterByKeys: true);
-echo "After:  " . json_encode($result2) . "\n\n";
 
-// Example 3: Nested Arrays (Recursive)
-echo "Example 3: Nested Arrays (Recursive)\n";
-echo str_repeat("-", 50) . "\n";
-$data3 = [
+echo "Original: ";
+print_r($data);
+
+$result = arrCleaner($data, ['password', 'secret_key'], filterByKeys: true);
+echo "After removing sensitive keys: ";
+print_r($result);
+echo "\n";
+
+// Example 3: Nested arrays (recursive)
+echo "Example 3: Nested arrays (recursive)\n";
+echo "----------------------------\n";
+$data = [
     'user' => [
         'name' => 'John',
         'password' => '123',
@@ -52,14 +66,19 @@ $data3 = [
     ],
     'password' => 'root'
 ];
-echo "Before: " . json_encode($data3) . "\n";
-$result3 = arrCleaner($data3, ['password'], filterByKeys: true);
-echo "After:  " . json_encode($result3) . "\n\n";
 
-// Example 4: Remove Multiple Values
-echo "Example 4: Remove Multiple Values\n";
-echo str_repeat("-", 50) . "\n";
-$data4 = [
+echo "Original: ";
+print_r($data);
+
+$result = arrCleaner($data, ['password'], filterByKeys: true);
+echo "After removing all 'password' keys recursively: ";
+print_r($result);
+echo "\n";
+
+// Example 4: Multiple values
+echo "Example 4: Remove multiple values\n";
+echo "----------------------------\n";
+$data = [
     'items' => [
         'apple' => 'available',
         'banana' => 'out_of_stock',
@@ -68,90 +87,108 @@ $data4 = [
         'mango' => 'out_of_stock'
     ]
 ];
-echo "Before: " . json_encode($data4) . "\n";
-$result4 = arrCleaner($data4, ['out_of_stock', 'discontinued']);
-echo "After:  " . json_encode($result4) . "\n\n";
 
-// Example 5: Advanced - Remove null and underscore keys
-echo "Example 5: Advanced - Remove null and underscore keys\n";
-echo str_repeat("-", 50) . "\n";
-$data5 = [
+echo "Original: ";
+print_r($data);
+
+$result = arrCleaner($data, ['out_of_stock', 'discontinued']);
+echo "After removing unavailable items: ";
+print_r($result);
+echo "\n";
+
+// Example 5: Advanced - Custom callback
+echo "Example 5: Advanced with custom callback\n";
+echo "----------------------------\n";
+$data = [
     'name' => 'John',
     '_internal' => 'secret',
     'age' => null,
     'email' => 'john@example.com',
-    '_debug' => true
+    '_debug' => true,
+    'phone' => '123-456'
 ];
-echo "Before: " . json_encode($data5) . "\n";
-$result5 = arrCleanerAdvanced($data5, function($value, $key) {
+
+echo "Original: ";
+print_r($data);
+
+$result = arrCleanerAdvanced($data, function($value, $key) {
     return str_starts_with($key, '_') || $value === null;
 });
-echo "After:  " . json_encode($result5) . "\n\n";
+echo "After removing keys starting with '_' and null values: ";
+print_r($result);
+echo "\n";
 
 // Example 6: Advanced - Remove empty strings
-echo "Example 6: Advanced - Remove empty strings and zeros\n";
-echo str_repeat("-", 50) . "\n";
-$data6 = [
+echo "Example 6: Remove empty strings and zeros\n";
+echo "----------------------------\n";
+$data = [
     'name' => 'John',
-    'description' => '',
-    'count' => 0,
+    'middle_name' => '',
     'age' => 30,
-    'bio' => ''
+    'score' => 0,
+    'email' => 'john@example.com',
+    'notes' => ''
 ];
-echo "Before: " . json_encode($data6) . "\n";
-$result6 = arrCleanerAdvanced($data6, fn($v, $k) => $v === '' || $v === 0);
-echo "After:  " . json_encode($result6) . "\n\n";
+
+echo "Original: ";
+print_r($data);
+
+$result = arrCleanerAdvanced($data, fn($v, $k) => $v === '' || $v === 0);
+echo "After removing empty strings and zeros: ";
+print_r($result);
+echo "\n";
 
 // Example 7: Complex nested structure
-echo "Example 7: Complex Nested Structure\n";
-echo str_repeat("-", 50) . "\n";
-$data7 = [
+echo "Example 7: Complex nested structure\n";
+echo "----------------------------\n";
+$data = [
     'users' => [
         [
             'id' => 1,
             'name' => 'John',
-            'status' => 'inactive',
-            'meta' => [
-                'status' => 'inactive',
-                'verified' => true
+            'status' => 'active',
+            'metadata' => [
+                'created' => '2024-01-01',
+                'status' => 'active'
             ]
         ],
         [
             'id' => 2,
             'name' => 'Jane',
-            'status' => 'active',
-            'meta' => [
-                'status' => 'active',
-                'verified' => true
+            'status' => 'inactive',
+            'metadata' => [
+                'created' => '2024-01-02',
+                'status' => 'inactive'
             ]
         ]
     ]
 ];
-echo "Before: " . json_encode($data7) . "\n";
-$result7 = arrCleaner($data7, ['inactive']);
-echo "After:  " . json_encode($result7) . "\n\n";
+
+echo "Original: ";
+print_r($data);
+
+$result = arrCleaner($data, ['inactive']);
+echo "After removing 'inactive' status: ";
+print_r($result);
+echo "\n";
 
 // Example 8: Performance test
-echo "Example 8: Performance Test\n";
-echo str_repeat("-", 50) . "\n";
+echo "Example 8: Performance test\n";
+echo "----------------------------\n";
 $largeArray = [];
 for ($i = 0; $i < 1000; $i++) {
-    $largeArray["key_" . $i] = [
-        'id' => $i,
-        'status' => $i % 2 === 0 ? 'active' : 'inactive',
-        'data' => [
-            'nested' => $i,
-            'status' => 'inactive'
-        ]
-    ];
+    $largeArray["key_$i"] = ($i % 3 === 0) ? 'remove_me' : "value_$i";
 }
-$start = microtime(true);
-$resultLarge = arrCleaner($largeArray, ['inactive']);
-$end = microtime(true);
-$time = round(($end - $start) * 1000, 2);
-echo "Filtered 1000 nested items in {$time}ms\n";
-echo "Items before: " . count($largeArray) . "\n";
-echo "Items after: " . count($resultLarge) . "\n\n";
 
-echo str_repeat("=", 50) . "\n";
-echo "All examples completed successfully!\n";
+echo "Testing with 1000 elements...\n";
+$start = microtime(true);
+$result = arrCleaner($largeArray, ['remove_me']);
+$end = microtime(true);
+
+echo "Original count: " . count($largeArray) . "\n";
+echo "Result count: " . count($result) . "\n";
+echo "Execution time: " . number_format(($end - $start) * 1000, 4) . " ms\n";
+
+echo "\n========================================\n";
+echo "All examples completed!\n";
+echo "========================================\n";
